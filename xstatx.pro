@@ -7,7 +7,8 @@ SOURCES += main.cpp \
     StatProvider.cpp
     
 HEADERS += \
-    StatProvider.h
+    StatProvider.h \
+    IStatProvider.h
 
 RESOURCES += qml.qrc
 

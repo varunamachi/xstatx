@@ -24,7 +24,7 @@ Window {
     height: 480
     Timer {
         id: mainTimer
-        interval: 1000;
+        interval: 300;
         running: true;
         repeat: true
         onTriggered: update()
@@ -41,7 +41,7 @@ Window {
         }
         ChartView {
             id: chart
-//            animationOptions: ChartView.AllAnimations
+            animationOptions: ChartView.SeriesAnimations
             anchors.fill: parent
             antialiasing: true
             ValueAxis {
