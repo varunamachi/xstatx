@@ -6,6 +6,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    using namespace XStatx;
     qmlRegisterSingletonType< StatProvider >( "vam",
                                               1,
                                               0,

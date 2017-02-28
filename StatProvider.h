@@ -5,6 +5,8 @@
 class QQmlEngine;
 class QJSEngine;
 
+namespace XStatx {
+
 class StatProvider : public QObject
 {
     Q_OBJECT
@@ -25,3 +27,4 @@ public slots:
 };
 
 
+}

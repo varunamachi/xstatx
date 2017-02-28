@@ -4,11 +4,14 @@ QT +=  qml quick charts
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    StatProvider.cpp
+    StatProvider.cpp \
+    CPUStatProvider.cpp
     
 HEADERS += \
     StatProvider.h \
-    IStatProvider.h
+    IStatProvider.h \
+    CPUInfo.h \
+    CPUStatProvider.h
 
 RESOURCES += qml.qrc
 

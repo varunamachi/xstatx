@@ -4,6 +4,8 @@
 
 #include "StatProvider.h"
 
+namespace XStatx {
+
 StatProvider::StatProvider(QObject *parent) : QObject(parent)
 {
     qsrand( static_cast< uint >( QTime::currentTime().msec() ));
@@ -22,4 +24,6 @@ float StatProvider::cpuTemp()
 #else
     return qrand() % 50 + 30;
 #endif
+}
+
 }

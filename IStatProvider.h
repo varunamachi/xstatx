@@ -1,6 +1,6 @@
 #pragma once
 
-namespace XStat {
+namespace XStatx {
 
 struct IStatProvider {
     virtual int numCPUCOres() const = 0;
