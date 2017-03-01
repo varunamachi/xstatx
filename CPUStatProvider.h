@@ -11,7 +11,7 @@ class CPUInfo;
 class CPUStatProvider
 {
 public:
-    const CPUInfo & getCPUInfo();
+    const CPUInfo * getCPUInfo();
 
     double getCPUUsage() const;
 

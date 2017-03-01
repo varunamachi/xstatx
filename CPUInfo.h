@@ -12,20 +12,22 @@ class CPUInfo : public QObject
     Q_PROPERTY( int numCores READ numCores )
 
 public:
-    enum Architecture {
-        Arch_x86,
-        Arch_x64,
-        Arch_ARM,
-        Arch_ARM64,
-        Arch_Unknown
+    enum class Architecture {
+        x86,
+        x64,
+        ARM,
+        ARM64,
+        Unknown
     };
+    Q_ENUM( Architecture )
 
     CPUInfo( QObject *parent = nullptr )
         : QObject( parent )
         , m_manufacturer( "Unknown" )
-        , m_arch( Arch_Unknown )
+        , m_arch( Architecture::Unknown )
         , m_modelName( "N/A" )
         , m_numCores( 0 )
+        , m_numThreads( 0 )
     {
 
     }
@@ -34,16 +36,17 @@ public:
              const Architecture arch,
              const QString &modelName,
              const int numCores,
+             const int numThreads,
              QObject *parent = nullptr )
         : QObject( parent )
         , m_manufacturer( manufacturer )
         , m_arch( arch )
         , m_modelName( modelName )
         , m_numCores( numCores )
+        , m_numThreads( numThreads )
     {
 
     }
-
 
     const QString & manufacturer() const
     {
@@ -65,6 +68,11 @@ public:
         return m_numCores;
     }
 
+    int numThreads() const
+    {
+        return m_numThreads;
+    }
+
     static void registerAsQMLType()
     {
 
@@ -78,6 +86,8 @@ private:
     QString m_modelName;
 
     int m_numCores;
+
+    int m_numThreads;
 
 };
 
