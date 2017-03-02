@@ -1,4 +1,5 @@
 #include <mutex>
+#include <thread>
 
 #include <sys/utsname.h>
 
@@ -43,6 +44,8 @@ struct CPUStatProvider::Data
 
     double m_avgFrequency;
 
+    bool m_keepRunning;
+
     QVector< double > m_coreTemps;
 
     QVector< CPUUsage > m_coreUsage;
@@ -50,6 +53,8 @@ struct CPUStatProvider::Data
     QVector< double > m_coreFrequencies;
 
     std::mutex m_lock;
+
+    std::thread m_thread;
 
     void readCPUID();
 
@@ -62,9 +67,21 @@ struct CPUStatProvider::Data
     void refresh();
 
     Data()
+        : m_cpuInfo{ }
+        , m_avgTemp{ 0 }
+        , m_avgUsage{ }
+        , m_avgFrequency{ 0 }
+        , m_keepRunning{ true }
     {
         readCPUID();
         refresh();
+        m_thread = std::thread{ &CPUStatProvider::Data::refresh, this };
+    }
+
+    ~Data()
+    {
+        m_keepRunning = false;
+        m_thread.join();
     }
 };
 
@@ -127,6 +144,33 @@ double CPUStatProvider::getCPUTemparature( std::uint8_t coreIndex ) const
     return 0;
 }
 
+double CPUStatProvider::getCPUFrequency() const
+{
+    LOCK();
+    return m_data->m_avgFrequency;
+}
+
+double CPUStatProvider::getCPUFrequency( std::uint8_t coreIndex ) const
+{
+    LOCK();
+    if( coreIndex < m_data->m_coreFrequencies.size() ) {
+        return m_data->m_coreFrequencies[ coreIndex ];
+    }
+    return 0;
+}
+
+CPUStatProvider::CPUStatProvider()
+    : ICPUStatProvider{}
+    , m_data{ new Data{ }}
+{
+
+}
+
+CPUStatProvider::~CPUStatProvider()
+{
+
+}
+
 void CPUStatProvider::Data::readCPUID()
 {
     QString vendorId{ };
@@ -134,7 +178,7 @@ void CPUStatProvider::Data::readCPUID()
     int numCores{ 1 };
     int numThreads{ 1 };
 
-    QFile cpuIDFile{ "/proc/cpuid" };
+    QFile cpuIDFile{ "/proc/cpuinfo" };
     if( cpuIDFile.exists() && cpuIDFile.open( QFile::ReadOnly )) {
         QTextStream reader{ &cpuIDFile };
         bool oneCoreDone = false;
@@ -180,13 +224,13 @@ void CPUStatProvider::Data::readCPUID()
 
 void CPUStatProvider::Data::updateFrequency()
 {
-    QFile cpuIDFile{ "/proc/cpuid" };
+    QFile cpuIDFile{ "/proc/cpuinfo" };
     double cumulated = 0.0;
     if( cpuIDFile.exists() && cpuIDFile.open( QFile::ReadOnly )) {
         QTextStream reader{ &cpuIDFile };
         auto coreIndex = 0;
-        while( ! reader.atEnd() ) {
-            auto line = reader.readLine();
+        auto line = reader.readLine();
+        while( ! line.isNull() ) {
             auto comps = line.split( ":" );
             if( comps.size() >= 2 )  {
                 auto key = comps.at( 0 ).trimmed();
@@ -203,6 +247,7 @@ void CPUStatProvider::Data::updateFrequency()
                     cumulated += freq;
                 }
             }
+            line = reader.readLine();
         }
         {
             std::lock_guard< std::mutex > guard( m_lock );
@@ -215,7 +260,53 @@ void CPUStatProvider::Data::updateFrequency()
 
 void CPUStatProvider::Data::updateTemparature()
 {
-    std::lock_guard< std::mutex > guard( m_lock );
+//    std::lock_guard< std::mutex > guard( m_lock );
+    //We should check which hwmon%d is for cpu by checking if the symlink
+    //points to a path that contains *coretemp*, for now its not done
+    const QString basePath{ "/sys/class/hwmon/hwmon1" };
+    auto readContent = [ & ]( const QString &fileName ) -> QString {
+        QString content;
+        QFile file{ basePath + "/" + fileName };
+        if( file.exists() && file.open( QFile::ReadOnly )) {
+            content = QString{ file.readAll() };
+        }
+        return content;
+    };
+
+    int i = 1;
+    int coreIndex = 0;
+    bool physicalDone = false;
+    while( true ) {
+        QString tempLabel;
+        QString tempInput;
+        tempLabel.sprintf( "temp%d_label", i );
+        tempInput.sprintf( "temp%d_input", i );
+        auto label = readContent( tempLabel );
+        auto input = readContent( tempInput ).toInt();
+        auto temp = ( static_cast< double >( input )) / 1000;
+        if( label.isEmpty() ) {
+            break;
+        }
+        else if( label.startsWith( "Physical id" )) {
+            if( physicalDone ) {
+                //right now we support only one processor
+                break;
+            }
+            std::lock_guard< std::mutex > guard( m_lock );
+            m_avgTemp = temp;
+        }
+        else {
+            std::lock_guard< std::mutex > guard( m_lock );
+            if( coreIndex < m_coreTemps.size() ) {
+                m_coreTemps[ coreIndex ] = temp;
+            }
+            else {
+                m_coreTemps.push_back( temp );
+            }
+            ++ coreIndex;
+        }
+        ++ i;
+    }
 }
 
 void CPUStatProvider::Data::updateCPUUsage()
@@ -230,6 +321,7 @@ void CPUStatProvider::Data::updateCPUUsage()
     auto calc = [ = ]( int coreIndex, QString &line ) {
 //        auto comps = line.split( "")
         QTextStream stream{ &line };
+        QString what;
         double user = 0.0;
         double nice = 0.0;
         double system = 0.0;
@@ -238,7 +330,8 @@ void CPUStatProvider::Data::updateCPUUsage()
         double irq = 0.0;
         double softirq = 0.0;
         double steal = 0.0;
-        stream  >> user
+        stream  >> what
+                >> user
                 >> nice
                 >> system
                 >> idle
@@ -249,26 +342,26 @@ void CPUStatProvider::Data::updateCPUUsage()
         auto nonIdle = user + nice + system + irq + softirq + steal;
         auto totalIdle = idle + iowait;
         auto total = idle + nonIdle;
-        auto &cur= m_avgUsage;
-        if( coreIndex != -1 && coreIndex < m_coreUsage.size() ) {
+        auto cur= &m_avgUsage;
+        if( coreIndex != -1 ) {
             if( coreIndex == m_coreUsage.size() ) {
                 m_coreUsage.push_back( CPUUsage{ });
             }
-            cur = m_coreUsage[ coreIndex ];
+            cur = &m_coreUsage[ coreIndex ];
         }
-        auto pc = (( total - cur.m_total ) - ( totalIdle - cur.m_idle ))
-                / ( total - cur.m_total );
-        cur.m_used = pc;
-        cur.m_total = total;
-        cur.m_idle = totalIdle;
+        auto pc = (( total - cur->m_total ) - ( totalIdle - cur->m_idle ))
+                / ( total - cur->m_total );
+        cur->m_used = pc * 100;
+        cur->m_total = total;
+        cur->m_idle = totalIdle;
     };
     QFile statFile{ "/proc/stat" };
     auto isFirst = true;
     auto coreIndex = 0;
-    if( statFile.exists() ) {
+    if( statFile.exists() && statFile.open( QFile::ReadOnly )) {
         QTextStream stream{ &statFile };
-        while( ! stream.atEnd() ) {
-            auto line = stream.readLine();
+        auto line = stream.readLine();
+        while( ! line.isNull() ) {
             if( isFirst && line.startsWith( "cpu" )) {
                 calc( -1, line );
                 isFirst = false;
@@ -280,14 +373,19 @@ void CPUStatProvider::Data::updateCPUUsage()
             else {
                 break;
             }
+            line = stream.readLine();
         }
     }
 }
 
 void CPUStatProvider::Data::refresh()
 {
-    updateFrequency();
-    updateTemparature();
+    while( m_keepRunning ) {
+        std::this_thread::sleep_for( std::chrono::milliseconds{ 1000 });
+        updateFrequency();
+        updateTemparature();
+        updateCPUUsage();
+    }
 }
 
 }

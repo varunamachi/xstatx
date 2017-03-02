@@ -15,7 +15,7 @@ Window {
         if(cnt >= 0.9 *  xAxis.tickCount ) {
             chart.scrollRight( scroll )
         }
-        var cur = Vam.Stat.cpuTemp();
+        var cur = Vam.Stat.getCPUTemparature();
         series.append(cnt, cur )
     }
 

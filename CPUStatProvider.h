@@ -4,22 +4,32 @@
 
 #include <QString>
 
+#include "ICPUStatProvider.h"
+
 namespace XStatx {
 
 class CPUInfo;
 
-class CPUStatProvider
+class CPUStatProvider : public ICPUStatProvider
 {
 public:
-    const CPUInfo * getCPUInfo();
+    const CPUInfo * getCPUInfo() override;
 
-    double getCPUUsage() const;
+    double getCPUUsage() const override;
 
-    double getCPUUsage( std::uint8_t coreIndex ) const;
+    double getCPUUsage( std::uint8_t coreIndex ) const override;
 
-    double getCPUTemparature() const;
+    double getCPUTemparature() const override;
 
-    double getCPUTemparature( std::uint8_t coreIndex ) const;
+    double getCPUTemparature( std::uint8_t coreIndex ) const override;
+
+    double getCPUFrequency() const override;
+
+    double getCPUFrequency( std::uint8_t coreIndex ) const override;
+
+    CPUStatProvider();
+
+    ~CPUStatProvider();
 
 private:
     struct Data;

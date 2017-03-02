@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <QObject>
 
 class QQmlEngine;
@@ -7,23 +9,36 @@ class QJSEngine;
 
 namespace XStatx {
 
-class StatProvider : public QObject
+class CPUInfo;
+class ICPUStatProvider;
+
+class StatProvider final : public QObject
 {
     Q_OBJECT
 public:
-    explicit StatProvider(QObject *parent = 0);
+    explicit StatProvider(
+            std::unique_ptr< ICPUStatProvider > &&cpuStatProvider,
+            QObject *parent = 0 );
 
-    Q_INVOKABLE float cpuTemp();
+    ~StatProvider();
 
-    static QObject *qmlInstance( QQmlEngine */*engine*/,
-                                 QJSEngine */*scriptEngine*/ )
-    {
-        return new StatProvider{};
-    }
+    Q_INVOKABLE const CPUInfo * getCPUInfo();
 
-signals:
+    Q_INVOKABLE double getCPUUsage() const;
 
-public slots:
+    Q_INVOKABLE double getCoreUsage( std::uint8_t coreIndex ) const;
+
+    Q_INVOKABLE double getCPUTemparature() const;
+
+    Q_INVOKABLE double getCoreTemparature( std::uint8_t coreIndex ) const;
+
+    Q_INVOKABLE double getCPUFrequency() const;
+
+    Q_INVOKABLE double getCoreFrequency( std::uint8_t coreIndex ) const;
+
+private:
+    struct Data;
+    std::unique_ptr< Data > m_data;
 };
 
 

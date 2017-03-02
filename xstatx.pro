@@ -9,9 +9,9 @@ SOURCES += main.cpp \
     
 HEADERS += \
     StatProvider.h \
-    IStatProvider.h \
     CPUInfo.h \
-    CPUStatProvider.h
+    CPUStatProvider.h \
+    ICPUStatProvider.h
 
 RESOURCES += qml.qrc
 

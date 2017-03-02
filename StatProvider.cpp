@@ -3,27 +3,70 @@
 #include <QDateTime>
 
 #include "StatProvider.h"
+#include "ICPUStatProvider.h"
 
 namespace XStatx {
 
-StatProvider::StatProvider(QObject *parent) : QObject(parent)
+struct StatProvider::Data
 {
-    qsrand( static_cast< uint >( QTime::currentTime().msec() ));
+    Data( std::unique_ptr< ICPUStatProvider > &&cpuStatProvider )
+        : m_cpuStatProvider{ std::move( cpuStatProvider )}
+    {
+
+    }
+
+    std::unique_ptr< ICPUStatProvider > m_cpuStatProvider;
+};
+
+StatProvider::StatProvider(
+        std::unique_ptr< ICPUStatProvider > &&cpuStatProvider,
+        QObject *parent )
+    : QObject(parent)
+    , m_data{ new Data{ std::move( cpuStatProvider )}}
+{
+//    qsrand( static_cast< uint >( QTime::currentTime().msec() ));
 }
 
-float StatProvider::cpuTemp()
+StatProvider::~StatProvider()
 {
-#ifdef Q_OS_LINUX
-    QFile procTemp( "/sys/class/thermal/thermal_zone0/temp" );
-    procTemp.open( QFile::ReadOnly );
-    auto ba = procTemp.readAll().trimmed();
-    bool ok;
-    auto temp = ba.toInt( &ok ) / 1000;
-//    qDebug() << ba;
-    return temp;
-#else
-    return qrand() % 50 + 30;
-#endif
+
 }
+
+const CPUInfo *StatProvider::getCPUInfo()
+{
+    return m_data->m_cpuStatProvider->getCPUInfo();
+}
+
+double StatProvider::getCPUUsage() const
+{
+    return m_data->m_cpuStatProvider->getCPUUsage();
+}
+
+double StatProvider::getCoreUsage( std::uint8_t coreIndex ) const
+{
+    return m_data->m_cpuStatProvider->getCPUUsage( coreIndex );
+}
+
+double StatProvider::getCPUTemparature() const
+{
+    return m_data->m_cpuStatProvider->getCPUFrequency();
+}
+
+double StatProvider::getCoreTemparature(uint8_t coreIndex) const
+{
+    return m_data->m_cpuStatProvider->getCPUFrequency( coreIndex );
+}
+
+double StatProvider::getCPUFrequency() const
+{
+    return m_data->m_cpuStatProvider->getCPUFrequency();
+}
+
+double StatProvider::getCoreFrequency( std::uint8_t coreIndex ) const
+{
+    return m_data->m_cpuStatProvider->getCPUFrequency( coreIndex );
+}
+
+
 
 }
