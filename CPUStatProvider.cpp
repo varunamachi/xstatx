@@ -74,7 +74,6 @@ struct CPUStatProvider::Data
         , m_keepRunning{ true }
     {
         readCPUID();
-        refresh();
         m_thread = std::thread{ &CPUStatProvider::Data::refresh, this };
     }
 
@@ -159,6 +158,12 @@ double CPUStatProvider::getCPUFrequency( std::uint8_t coreIndex ) const
     return 0;
 }
 
+void CPUStatProvider::stopCollecting()
+{
+    m_data->m_keepRunning = false;
+    m_data->m_thread.join();
+}
+
 CPUStatProvider::CPUStatProvider()
     : ICPUStatProvider{}
     , m_data{ new Data{ }}
@@ -182,12 +187,12 @@ void CPUStatProvider::Data::readCPUID()
     if( cpuIDFile.exists() && cpuIDFile.open( QFile::ReadOnly )) {
         QTextStream reader{ &cpuIDFile };
         bool oneCoreDone = false;
-        while( ! reader.atEnd() ) {
-            auto line = reader.readLine();
+        auto line = reader.readLine();
+        while( ! line.isNull() ) {
             auto comps = line.split( ":" );
             if( comps.size() >= 2 )  {
                 auto key = comps.at( 0 ).trimmed();
-                auto value = comps.at( 0 ).trimmed();
+                auto value = comps.at( 1 ).trimmed();
                 if( key == "processor" ) {
                     if( oneCoreDone ) {
                         break;
@@ -207,6 +212,7 @@ void CPUStatProvider::Data::readCPUID()
                     numThreads = value.toInt();
                 }
             }
+            line = reader.readLine();
         }
         auto arch = getArch();
         {
@@ -234,17 +240,18 @@ void CPUStatProvider::Data::updateFrequency()
             auto comps = line.split( ":" );
             if( comps.size() >= 2 )  {
                 auto key = comps.at( 0 ).trimmed();
-                auto value = comps.at( 0 ).trimmed();
+                auto value = comps.at( 1 ).trimmed();
                 if( key == "cpu MHz" ) {
                     std::lock_guard< std::mutex > guard( m_lock );
                     auto freq = value.toDouble();
-                    if( coreIndex < m_coreFrequencies.size() ) {
-                        m_coreFrequencies[ coreIndex ] = freq;
-                    }
-                    else {
+                    if( coreIndex == m_coreFrequencies.size() ) {
                         m_coreFrequencies.push_back( freq );
                     }
+                    else {
+                        m_coreFrequencies[ coreIndex ] = freq;
+                    }
                     cumulated += freq;
+                    ++ coreIndex;
                 }
             }
             line = reader.readLine();
@@ -260,7 +267,6 @@ void CPUStatProvider::Data::updateFrequency()
 
 void CPUStatProvider::Data::updateTemparature()
 {
-//    std::lock_guard< std::mutex > guard( m_lock );
     //We should check which hwmon%d is for cpu by checking if the symlink
     //points to a path that contains *coretemp*, for now its not done
     const QString basePath{ "/sys/class/hwmon/hwmon1" };
@@ -318,7 +324,7 @@ void CPUStatProvider::Data::updateCPUUsage()
 //    Total=Idle+NonIdle # first line of file for all cpus
 //    CPU_Percentage=((Total-PrevTotal)-(Idle-PrevIdle))/(Total-PrevTotal)
 
-    auto calc = [ = ]( int coreIndex, QString &line ) {
+    auto calc = [ & ]( int coreIndex, QString &line ) {
 //        auto comps = line.split( "")
         QTextStream stream{ &line };
         QString what;
@@ -351,6 +357,7 @@ void CPUStatProvider::Data::updateCPUUsage()
         }
         auto pc = (( total - cur->m_total ) - ( totalIdle - cur->m_idle ))
                 / ( total - cur->m_total );
+        std::lock_guard< std::mutex > guard( m_lock );
         cur->m_used = pc * 100;
         cur->m_total = total;
         cur->m_idle = totalIdle;

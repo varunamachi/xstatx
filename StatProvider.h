@@ -36,6 +36,8 @@ public:
 
     Q_INVOKABLE double getCoreFrequency( std::uint8_t coreIndex ) const;
 
+    Q_INVOKABLE void stopCollecting();
+
 private:
     struct Data;
     std::unique_ptr< Data > m_data;

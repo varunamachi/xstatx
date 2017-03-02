@@ -1,6 +1,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QDateTime>
+#include <QApplication>
 
 #include "StatProvider.h"
 #include "ICPUStatProvider.h"
@@ -24,6 +25,7 @@ StatProvider::StatProvider(
     : QObject(parent)
     , m_data{ new Data{ std::move( cpuStatProvider )}}
 {
+
 //    qsrand( static_cast< uint >( QTime::currentTime().msec() ));
 }
 
@@ -49,12 +51,12 @@ double StatProvider::getCoreUsage( std::uint8_t coreIndex ) const
 
 double StatProvider::getCPUTemparature() const
 {
-    return m_data->m_cpuStatProvider->getCPUFrequency();
+    return m_data->m_cpuStatProvider->getCPUTemparature();
 }
 
 double StatProvider::getCoreTemparature(uint8_t coreIndex) const
 {
-    return m_data->m_cpuStatProvider->getCPUFrequency( coreIndex );
+    return m_data->m_cpuStatProvider->getCPUTemparature( coreIndex );
 }
 
 double StatProvider::getCPUFrequency() const
@@ -65,6 +67,11 @@ double StatProvider::getCPUFrequency() const
 double StatProvider::getCoreFrequency( std::uint8_t coreIndex ) const
 {
     return m_data->m_cpuStatProvider->getCPUFrequency( coreIndex );
+}
+
+void StatProvider::stopCollecting()
+{
+    m_data->m_cpuStatProvider->stopCollecting();
 }
 
 

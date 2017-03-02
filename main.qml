@@ -15,6 +15,8 @@ Window {
         if(cnt >= 0.9 *  xAxis.tickCount ) {
             chart.scrollRight( scroll )
         }
+
+
         var cur = Vam.Stat.getCPUTemparature();
         series.append(cnt, cur )
     }
@@ -41,7 +43,7 @@ Window {
         }
         ChartView {
             id: chart
-            animationOptions: ChartView.SeriesAnimations
+//            animationOptions: ChartView.SeriesAnimations
             anchors.fill: parent
             antialiasing: true
             ValueAxis {
@@ -63,6 +65,14 @@ Window {
                 axisY: yAxis
                 name: "CPU Temprature"
             }
+//            Repeater {
+//                LineSeries {
+//                    id:
+//                    axisX: xAxis
+//                    axisY: yAxis
+//                    name: "CPU Temprature"
+//                }
+//            }
         }
     }
 }

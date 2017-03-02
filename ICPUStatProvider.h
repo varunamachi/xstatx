@@ -22,6 +22,8 @@ struct ICPUStatProvider {
 
     virtual double getCPUFrequency( std::uint8_t coreIndex ) const = 0;
 
+    virtual void stopCollecting() = 0;
+
     virtual ~ICPUStatProvider() {}
 };
 

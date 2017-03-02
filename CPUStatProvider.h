@@ -27,6 +27,8 @@ public:
 
     double getCPUFrequency( std::uint8_t coreIndex ) const override;
 
+    void stopCollecting() override;
+
     CPUStatProvider();
 
     ~CPUStatProvider();
