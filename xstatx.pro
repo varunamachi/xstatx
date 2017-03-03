@@ -5,13 +5,21 @@ CONFIG += c++11
 
 SOURCES += main.cpp \
     StatProvider.cpp \
-    CPUStatProvider.cpp
     
 HEADERS += \
     StatProvider.h \
     CPUInfo.h \
-    CPUStatProvider.h \
-    ICPUStatProvider.h
+    ICPUStatProvider.h \
+
+unix {
+    HEADERS += LinuxCPUStatProvider.h \
+
+    SOURCES += LinuxCPUStatProvider.cpp \
+} else {
+    HEADERS += DummyCPUStatProvider.h \
+
+    SOURCES += DummyCPUStatProvider.cpp \
+}
 
 RESOURCES += qml.qrc
 

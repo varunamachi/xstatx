@@ -3,7 +3,6 @@
 
 #include <sys/utsname.h>
 
-#include <QThread>
 #include <QVector>
 #include <QReadWriteLock>
 #include <QFile>
@@ -11,7 +10,7 @@
 #include <QDebug>
 #include <QPointer>
 
-#include "CPUStatProvider.h"
+#include "LinuxCPUStatProvider.h"
 #include "CPUInfo.h"
 
 #define LOCK() std::lock_guard< std::mutex > guard( m_data->m_lock )
@@ -34,7 +33,7 @@ struct CPUUsage
     double m_total;
 };
 
-struct CPUStatProvider::Data
+struct LinuxCPUStatProvider::Data
 {
     QPointer< CPUInfo > m_cpuInfo;
 
@@ -74,7 +73,7 @@ struct CPUStatProvider::Data
         , m_keepRunning{ true }
     {
         readCPUID();
-        m_thread = std::thread{ &CPUStatProvider::Data::refresh, this };
+        m_thread = std::thread{ &LinuxCPUStatProvider::Data::refresh, this };
     }
 
     ~Data()
@@ -108,18 +107,18 @@ static CPUInfo::Architecture getArch()
 }
 
 
-const CPUInfo * CPUStatProvider::getCPUInfo()
+const CPUInfo * LinuxCPUStatProvider::getCPUInfo()
 {
     LOCK();
     return m_data->m_cpuInfo.data();
 }
 
-double CPUStatProvider::getCPUUsage() const
+double LinuxCPUStatProvider::getCPUUsage() const
 {
     return m_data->m_avgUsage.m_used;
 }
 
-double CPUStatProvider::getCPUUsage( std::uint8_t coreIndex ) const
+double LinuxCPUStatProvider::getCPUUsage( std::uint8_t coreIndex ) const
 {
     LOCK();
     if( coreIndex < m_data->m_coreUsage.size() ) {
@@ -128,13 +127,13 @@ double CPUStatProvider::getCPUUsage( std::uint8_t coreIndex ) const
     return 0;
 }
 
-double CPUStatProvider::getCPUTemparature() const
+double LinuxCPUStatProvider::getCPUTemparature() const
 {
     LOCK();
     return m_data->m_avgTemp;
 }
 
-double CPUStatProvider::getCPUTemparature( std::uint8_t coreIndex ) const
+double LinuxCPUStatProvider::getCPUTemparature( std::uint8_t coreIndex ) const
 {
     LOCK();
     if( coreIndex < m_data->m_coreTemps.size() ) {
@@ -143,13 +142,13 @@ double CPUStatProvider::getCPUTemparature( std::uint8_t coreIndex ) const
     return 0;
 }
 
-double CPUStatProvider::getCPUFrequency() const
+double LinuxCPUStatProvider::getCPUFrequency() const
 {
     LOCK();
     return m_data->m_avgFrequency;
 }
 
-double CPUStatProvider::getCPUFrequency( std::uint8_t coreIndex ) const
+double LinuxCPUStatProvider::getCPUFrequency( std::uint8_t coreIndex ) const
 {
     LOCK();
     if( coreIndex < m_data->m_coreFrequencies.size() ) {
@@ -158,25 +157,25 @@ double CPUStatProvider::getCPUFrequency( std::uint8_t coreIndex ) const
     return 0;
 }
 
-void CPUStatProvider::stopCollecting()
+void LinuxCPUStatProvider::stopCollecting()
 {
     m_data->m_keepRunning = false;
     m_data->m_thread.join();
 }
 
-CPUStatProvider::CPUStatProvider()
+LinuxCPUStatProvider::LinuxCPUStatProvider()
     : ICPUStatProvider{}
     , m_data{ new Data{ }}
 {
 
 }
 
-CPUStatProvider::~CPUStatProvider()
+LinuxCPUStatProvider::~LinuxCPUStatProvider()
 {
 
 }
 
-void CPUStatProvider::Data::readCPUID()
+void LinuxCPUStatProvider::Data::readCPUID()
 {
     QString vendorId{ };
     QString modelName{ };
@@ -228,7 +227,7 @@ void CPUStatProvider::Data::readCPUID()
     }
 }
 
-void CPUStatProvider::Data::updateFrequency()
+void LinuxCPUStatProvider::Data::updateFrequency()
 {
     QFile cpuIDFile{ "/proc/cpuinfo" };
     double cumulated = 0.0;
@@ -265,7 +264,7 @@ void CPUStatProvider::Data::updateFrequency()
     }
 }
 
-void CPUStatProvider::Data::updateTemparature()
+void LinuxCPUStatProvider::Data::updateTemparature()
 {
     //We should check which hwmon%d is for cpu by checking if the symlink
     //points to a path that contains *coretemp*, for now its not done
@@ -315,7 +314,7 @@ void CPUStatProvider::Data::updateTemparature()
     }
 }
 
-void CPUStatProvider::Data::updateCPUUsage()
+void LinuxCPUStatProvider::Data::updateCPUUsage()
 {
 //    from: http://stackoverflow.com/a/28063368
 //    user nice system idle iowait irq softirq  steal  guest  guest_nice
@@ -385,7 +384,7 @@ void CPUStatProvider::Data::updateCPUUsage()
     }
 }
 
-void CPUStatProvider::Data::refresh()
+void LinuxCPUStatProvider::Data::refresh()
 {
     while( m_keepRunning ) {
         std::this_thread::sleep_for( std::chrono::milliseconds{ 1000 });

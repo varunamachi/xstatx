@@ -3,14 +3,22 @@
 
 #include "StatProvider.h"
 #include "CPUInfo.h"
-#include "CPUStatProvider.h"
+#ifdef Q_OS_LINUX
+    #include "LinuxCPUStatProvider.h"
+#else
+    #include "DummyCPUStatProvider.h"
+#endif
 
 static QObject *statProviderInstance( QQmlEngine */*engine*/,
                                       QJSEngine */*scriptEngine*/ )
 {
     using namespace XStatx;
     auto cpuStatProvider = std::unique_ptr< ICPUStatProvider >{
-        new CPUStatProvider{}
+#ifdef Q_OS_LINUX
+        new LinuxCPUStatProvider{}
+#else
+        new DummyCPUStatProvider{}
+#endif
     };
     return new XStatx::StatProvider{ std::move( cpuStatProvider )};
 }

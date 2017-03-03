@@ -65,14 +65,12 @@ Window {
                 axisY: yAxis
                 name: "CPU Temprature"
             }
-//            Repeater {
-//                LineSeries {
-//                    id:
-//                    axisX: xAxis
-//                    axisY: yAxis
-//                    name: "CPU Temprature"
-//                }
-//            }
+
+                LineSeries {
+                    axisX: xAxis
+                    axisY: yAxis
+                    name: "CPU Temprature"
+            }
         }
     }
 }

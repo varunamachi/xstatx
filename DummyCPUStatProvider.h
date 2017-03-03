@@ -2,18 +2,18 @@
 
 #include <memory>
 
-#include <QString>
-
 #include "ICPUStatProvider.h"
 
 namespace XStatx {
 
-class CPUInfo;
-
-class CPUStatProvider : public ICPUStatProvider
+class DummyCPUStatProvider : public ICPUStatProvider
 {
 public:
-    const CPUInfo * getCPUInfo() override;
+    DummyCPUStatProvider();
+
+    ~DummyCPUStatProvider();
+
+    const CPUInfo *getCPUInfo() override;
 
     double getCPUUsage() const override;
 
@@ -28,10 +28,6 @@ public:
     double getCPUFrequency( std::uint8_t coreIndex ) const override;
 
     void stopCollecting() override;
-
-    CPUStatProvider();
-
-    ~CPUStatProvider();
 
 private:
     struct Data;
