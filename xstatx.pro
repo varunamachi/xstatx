@@ -5,11 +5,17 @@ CONFIG += c++11
 
 SOURCES += main.cpp \
     StatProvider.cpp \
+    RPiCPUStatProvider.cpp \
+    StatUtils.cpp \
+    AbstractCPUStatProvider.cpp
     
 HEADERS += \
     StatProvider.h \
     CPUInfo.h \
-    ICPUStatProvider.h \
+    RPiCPUStatProvider.h \
+    StatUtils.h \
+    AbstractCPUStatProvider.h \
+    CPUStat.h
 
 unix {
     HEADERS += LinuxCPUStatProvider.h \

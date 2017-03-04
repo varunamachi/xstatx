@@ -8,26 +8,38 @@
 #include "DummyCPUStatProvider.h"
 
 namespace XStatx {
+//struct DummyCPUStatProvider::Data
+//{
+//    Data()
+//        : m_cpuInfo{ new CPUInfo{ "GinuineIntel",
+//                                   CPUInfo::Architecture::x64,
+//                                   "Imaginary x64 Processor",
+//                                   8,
+//                                   4 } }
+//    {
 
-struct DummyCPUStatProvider::Data
+//    }
+
+//    QPointer< CPUInfo > m_cpuInfo;
+//};
+
+CPUInfo * DummyCPUStatProvider::readCPUInfo()
 {
-    Data()
-        : m_cpuInfo{ new CPUInfo{ "GinuineIntel",
-                                   CPUInfo::Architecture::x64,
-                                   "Imaginary x64 Processor",
-                                   8,
-                                   4 } }
-    {
+    return new CPUInfo { "GinuineIntel",
+                CPUInfo::Architecture::x64,
+                "Imaginary x64 Processor",
+                8,
+                4 };
+}
 
-    }
+void DummyCPUStatProvider::refreshData( CPUStat *stat )
+{
 
-    QPointer< CPUInfo > m_cpuInfo;
-};
+}
 
 DummyCPUStatProvider::DummyCPUStatProvider()
-    : m_data{ new Data{ }}
 {
-    qsrand( static_cast< uint >( QTime::currentTime().msec() ));
+
 }
 
 DummyCPUStatProvider::~DummyCPUStatProvider()
@@ -35,45 +47,5 @@ DummyCPUStatProvider::~DummyCPUStatProvider()
 
 }
 
-const CPUInfo * DummyCPUStatProvider::getCPUInfo()
-{
-    return m_data->m_cpuInfo.data();
 }
 
-double DummyCPUStatProvider::getCPUUsage() const
-{
-    return double( qrand() % 100 );
-}
-
-double DummyCPUStatProvider::getCPUUsage( std::uint8_t /*coreIndex*/ ) const
-{
-    return ( double( qrand() % 100 ));
-}
-
-double DummyCPUStatProvider::getCPUTemparature() const
-{
-    return 50 + ( double( qrand() % 10 ));
-}
-
-double DummyCPUStatProvider::getCPUTemparature( std::uint8_t /*coreIndex*/ ) const
-{
-    return 50 + ( double( qrand() % 10 ));
-}
-
-double DummyCPUStatProvider::getCPUFrequency() const
-{
-    return 2000 + ( double( qrand() % 1000 ));
-}
-
-double DummyCPUStatProvider::getCPUFrequency(
-        std::uint8_t /*coreIndex*/ ) const
-{
-    return 2000 + ( double( qrand() % 1000 ));
-}
-
-void DummyCPUStatProvider::stopCollecting()
-{
-
-}
-
-}

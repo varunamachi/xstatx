@@ -4,38 +4,34 @@
 
 #include <QString>
 
-#include "ICPUStatProvider.h"
+#include "AbstractCPUStatProvider.h"
 
 namespace XStatx {
 
 class CPUInfo;
 
-class LinuxCPUStatProvider : public ICPUStatProvider
+class LinuxCPUStatProvider : public AbstractCPUStatProvider
 {
 public:
-    const CPUInfo * getCPUInfo() override;
-
-    double getCPUUsage() const override;
-
-    double getCPUUsage( std::uint8_t coreIndex ) const override;
-
-    double getCPUTemparature() const override;
-
-    double getCPUTemparature( std::uint8_t coreIndex ) const override;
-
-    double getCPUFrequency() const override;
-
-    double getCPUFrequency( std::uint8_t coreIndex ) const override;
-
-    void stopCollecting() override;
 
     LinuxCPUStatProvider();
 
     ~LinuxCPUStatProvider();
 
-private:
-    struct Data;
-    std::unique_ptr< Data > m_data;
+//    void readCPUInfo();
+
+//    void updateFrequency();
+
+//    void updateTemparature();
+
+//    void updateCPUUsage();
+
+//    void refresh();
+
+protected:
+    CPUInfo * readCPUInfo() override;
+
+    void refreshData( CPUStat *stat ) override;
 };
 
 }

@@ -13,14 +13,14 @@ static QObject *statProviderInstance( QQmlEngine */*engine*/,
                                       QJSEngine */*scriptEngine*/ )
 {
     using namespace XStatx;
-    auto cpuStatProvider = std::unique_ptr< ICPUStatProvider >{
+    auto cpuStatProvider = std::unique_ptr< AbstractCPUStatProvider >{
 #ifdef Q_OS_LINUX
         new LinuxCPUStatProvider{}
 #else
         new DummyCPUStatProvider{}
 #endif
     };
-    return new XStatx::StatProvider{ std::move( cpuStatProvider )};
+    return new StatProvider{ std::move( cpuStatProvider )};
 }
 
 int main(int argc, char *argv[])

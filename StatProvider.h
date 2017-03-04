@@ -10,14 +10,14 @@ class QJSEngine;
 namespace XStatx {
 
 class CPUInfo;
-class ICPUStatProvider;
+class AbstractCPUStatProvider;
 
 class StatProvider final : public QObject
 {
     Q_OBJECT
 public:
     explicit StatProvider(
-            std::unique_ptr< ICPUStatProvider > &&cpuStatProvider,
+            std::unique_ptr< AbstractCPUStatProvider > &&cpuStatProvider,
             QObject *parent = 0 );
 
     ~StatProvider();
@@ -26,17 +26,15 @@ public:
 
     Q_INVOKABLE double getCPUUsage() const;
 
-    Q_INVOKABLE double getCoreUsage( std::uint8_t coreIndex ) const;
+    Q_INVOKABLE double getCoreUsage( quint8 coreIndex ) const;
 
     Q_INVOKABLE double getCPUTemparature() const;
 
-    Q_INVOKABLE double getCoreTemparature( std::uint8_t coreIndex ) const;
+    Q_INVOKABLE double getCoreTemparature( quint8 coreIndex ) const;
 
     Q_INVOKABLE double getCPUFrequency() const;
 
-    Q_INVOKABLE double getCoreFrequency( std::uint8_t coreIndex ) const;
-
-    Q_INVOKABLE void stopCollecting();
+    Q_INVOKABLE double getCoreFrequency( quint8 coreIndex ) const;
 
 private:
     struct Data;

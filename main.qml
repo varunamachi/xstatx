@@ -12,13 +12,14 @@ Window {
         var offset = (xAxis.max - xAxis.min) / xAxis.tickCount
         var scroll = chart.plotArea.width / xAxis.tickCount
         cnt = cnt + offset
-        if(cnt >= 0.9 *  xAxis.tickCount ) {
+        if(cnt >= 0.98 *  xAxis.tickCount ) {
             chart.scrollRight( scroll )
         }
-
-
-        var cur = Vam.Stat.getCPUTemparature();
-        series.append(cnt, cur )
+        series.append(cnt, Vam.Stat.getCPUTemparature() )
+        core1.append(cnt, Vam.Stat.getCoreTemparature(0) )
+        core2.append(cnt, Vam.Stat.getCoreTemparature(1) )
+        core3.append(cnt, Vam.Stat.getCoreTemparature(2) )
+        core4.append(cnt, Vam.Stat.getCoreTemparature(3) )
     }
 
     visible: true
@@ -50,26 +51,50 @@ Window {
                 id: xAxis
                 visible: false
                 min: 0
-                max: 50
-                tickCount: 50
+                max: 100
+                tickCount: 100
             }
             ValueAxis{
                 id: yAxis
                 min: 0
                 max: 100
-                titleText: "Temperature [&deg;C]"
+                titleText: "Temp [&deg;C]"
             }
-            LineSeries {
+            SplineSeries {
+                id: core1
+                axisX: xAxis
+                axisY: yAxis
+                width: 1
+                name: "Core 0"
+            }
+            SplineSeries {
+                id: core2
+                axisX: xAxis
+                axisY: yAxis
+                width: 1
+                name: "Core 1"
+            }
+            SplineSeries {
+                id: core3
+                axisX: xAxis
+                axisY: yAxis
+                width: 1
+                name: "Core 2"
+            }
+            SplineSeries {
+                id: core4
+                axisX: xAxis
+                axisY: yAxis
+                width: 1
+                name: "Core 3"
+            }
+            SplineSeries {
                 id: series
                 axisX: xAxis
                 axisY: yAxis
-                name: "CPU Temprature"
-            }
-
-                LineSeries {
-                    axisX: xAxis
-                    axisY: yAxis
-                    name: "CPU Temprature"
+                width: 3
+                name: "CPU"
+                color: "green"
             }
         }
     }

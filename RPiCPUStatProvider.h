@@ -1,17 +1,13 @@
 #pragma once
 
-#include <memory>
-
 #include "AbstractCPUStatProvider.h"
 
 namespace XStatx {
 
-class DummyCPUStatProvider : public AbstractCPUStatProvider
+class RPiCPUStatProvider : public AbstractCPUStatProvider
 {
 public:
-    DummyCPUStatProvider();
-
-    ~DummyCPUStatProvider();
+    RPiCPUStatProvider();
 
 protected:
     CPUInfo * readCPUInfo() override;

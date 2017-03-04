@@ -4,7 +4,7 @@
 #include <QApplication>
 
 #include "StatProvider.h"
-#include "ICPUStatProvider.h"
+#include "AbstractCPUStatProvider.h"
 
 namespace XStatx {
 
@@ -16,7 +16,7 @@ struct StatProvider::Data
 
     }
 
-    std::unique_ptr< ICPUStatProvider > m_cpuStatProvider;
+    std::unique_ptr< AbstractCPUStatProvider > m_cpuStatProvider;
 };
 
 StatProvider::StatProvider(
@@ -44,7 +44,7 @@ double StatProvider::getCPUUsage() const
     return m_data->m_cpuStatProvider->getCPUUsage();
 }
 
-double StatProvider::getCoreUsage( std::uint8_t coreIndex ) const
+double StatProvider::getCoreUsage( quint8 coreIndex ) const
 {
     return m_data->m_cpuStatProvider->getCPUUsage( coreIndex );
 }
@@ -54,7 +54,7 @@ double StatProvider::getCPUTemparature() const
     return m_data->m_cpuStatProvider->getCPUTemparature();
 }
 
-double StatProvider::getCoreTemparature(uint8_t coreIndex) const
+double StatProvider::getCoreTemparature( quint8 coreIndex) const
 {
     return m_data->m_cpuStatProvider->getCPUTemparature( coreIndex );
 }
@@ -64,16 +64,9 @@ double StatProvider::getCPUFrequency() const
     return m_data->m_cpuStatProvider->getCPUFrequency();
 }
 
-double StatProvider::getCoreFrequency( std::uint8_t coreIndex ) const
+double StatProvider::getCoreFrequency( quint8 coreIndex ) const
 {
     return m_data->m_cpuStatProvider->getCPUFrequency( coreIndex );
 }
-
-void StatProvider::stopCollecting()
-{
-    m_data->m_cpuStatProvider->stopCollecting();
-}
-
-
 
 }
