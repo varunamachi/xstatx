@@ -12,7 +12,7 @@ public:
 protected:
     CPUInfo * readCPUInfo() override;
 
-    void refreshData( CPUStat *stat ) override;
+    void refreshData( CPUStat &stat ) override;
 };
 
 }

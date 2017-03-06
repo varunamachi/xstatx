@@ -24,30 +24,34 @@ struct CPUUsage
     double m_total;
 };
 
+template< typename ItemType >
+struct CPUStatItem
+{
+    CPUStatItem()
+        : m_avg{ ItemType{ }}
+    {
+
+    }
+
+    ItemType m_avg;
+
+    QVector< ItemType > m_cores;
+};
+
 struct CPUStat
 {
 
     CPUStat()
-        : m_avgTemp{ 0 }
-        , m_avgUsage{ }
-        , m_avgFrequency{ 0 }
-        , m_keepRunning{ true }
     {
     }
 
-    double m_avgTemp;
+    CPUStatItem< double > m_temp;
 
-    CPUUsage m_avgUsage;
+    CPUStatItem< CPUUsage > m_usage;
 
-    double m_avgFrequency;
+    CPUStatItem< double > m_frequency;
 
-    bool m_keepRunning;
 
-    QVector< double > m_coreTemps;
-
-    QVector< CPUUsage > m_coreUsage;
-
-    QVector< double > m_coreFrequencies;
 };
 
 }

@@ -18,7 +18,7 @@ CPUInfo * RPiCPUStatProvider::readCPUInfo()
                 4 };
 }
 
-void RPiCPUStatProvider::refreshData( CPUStat *stat )
+void RPiCPUStatProvider::refreshData( CPUStat &stat )
 {
 
 }

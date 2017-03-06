@@ -34,7 +34,7 @@ CPUInfo * LinuxCPUStatProvider::readCPUInfo()
                 4 };
 }
 
-void LinuxCPUStatProvider::refreshData( CPUStat *stat )
+void LinuxCPUStatProvider::refreshData( CPUStat &stat )
 {
 
 }

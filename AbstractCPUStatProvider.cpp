@@ -60,14 +60,14 @@ const CPUInfo * AbstractCPUStatProvider::getCPUInfo()
 double AbstractCPUStatProvider::getCPUUsage() const
 {
     LOCK();
-    return m_data->m_stat->m_avgUsage.m_used;
+    return m_data->m_stat->m_usage.m_avg.m_used;
 }
 
 double AbstractCPUStatProvider::getCPUUsage( std::uint8_t coreIndex ) const
 {
-    if( coreIndex < m_data->m_stat->m_coreUsage.size() ) {
+    if( coreIndex < m_data->m_stat->m_usage.m_cores.size() ) {
         LOCK();
-        return m_data->m_stat->m_coreUsage[ coreIndex ].m_used;
+        return m_data->m_stat->m_usage.m_cores[ coreIndex ].m_used;
     }
     return 0;
 }
@@ -75,15 +75,15 @@ double AbstractCPUStatProvider::getCPUUsage( std::uint8_t coreIndex ) const
 double AbstractCPUStatProvider::getCPUTemparature() const
 {
     LOCK();
-    return m_data->m_stat->m_avgTemp;
+    return m_data->m_stat->m_temp.m_avg;
 }
 
 double AbstractCPUStatProvider::getCPUTemparature(
         std::uint8_t coreIndex ) const
 {
-    if( coreIndex < m_data->m_stat->m_coreTemps.size() ) {
+    if( coreIndex < m_data->m_stat->m_temp.m_cores.size() ) {
         LOCK();
-        return m_data->m_stat->m_coreTemps[ coreIndex ];
+        return m_data->m_stat->m_temp.m_cores[ coreIndex ];
     }
     return 0;
 }
@@ -91,14 +91,14 @@ double AbstractCPUStatProvider::getCPUTemparature(
 double AbstractCPUStatProvider::getCPUFrequency() const
 {
     LOCK();
-    return m_data->m_stat->m_avgFrequency;
+    return m_data->m_stat->m_frequency.m_avg;
 }
 
 double AbstractCPUStatProvider::getCPUFrequency( std::uint8_t coreIndex ) const
 {
-    if( coreIndex < m_data->m_stat->m_coreFrequencies.size() ) {
+    if( coreIndex < m_data->m_stat->m_frequency.m_cores.size() ) {
         LOCK();
-        return m_data->m_stat->m_coreFrequencies[ coreIndex ];
+        return m_data->m_stat->m_frequency.m_cores[ coreIndex ];
     }
     return 0;
 }
