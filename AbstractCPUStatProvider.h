@@ -13,6 +13,10 @@ struct CPUStat;
 class AbstractCPUStatProvider {
 
 public:
+    AbstractCPUStatProvider();
+
+    virtual ~AbstractCPUStatProvider() = 0;
+
     const CPUInfo * getCPUInfo();
 
     double getCPUUsage() const;
@@ -27,15 +31,14 @@ public:
 
     double getCPUFrequency( std::uint8_t coreIndex ) const;
 
-    virtual ~AbstractCPUStatProvider();
 
 protected:
     struct Data;
     std::unique_ptr< Data > m_data;
 
-    virtual CPUInfo * readCPUInfo() = 0;
+    virtual CPUInfo * readCPUInfo();
 
-    virtual void refreshData( CPUStat *stat ) = 0;
+    virtual void refreshData( CPUStat &stat );
 
 private:
 

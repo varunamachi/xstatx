@@ -11,7 +11,6 @@
 #include "LinuxCPUStatProvider.h"
 #include "CPUInfo.h"
 
-#define LOCK() std::lock_guard< std::mutex > guard( m_data->m_lock )
 
 namespace XStatx {
 
